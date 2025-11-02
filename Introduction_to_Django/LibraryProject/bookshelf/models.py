@@ -13,5 +13,5 @@ class Book(models.Model):
 
     def __str__(self):
         """Returns a string representation of the book (Title by Author)."""
-        return f"{self.title} by {self.author}"
+        return f"{self.title} by {self.author}({self.publication_year})"
 
