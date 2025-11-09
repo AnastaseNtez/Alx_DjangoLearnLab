@@ -26,15 +26,14 @@ def books_in_library(library_name):
         return None
 
 
-# Query 3: Retrieve the librarian for a library
+# --- Query 3: Retrieve the librarian for a library (OneToOneField lookup) ---
 def librarian_for_library(library_name):
-    """
-    Retrieve the librarian associated with a specific library.
-    """
+    """Retrieve the librarian associated with a specific library."""
     try:
+        # spanning relationship lookup (library__name) to filter the Librarian
+        
         librarian = Librarian.objects.get(library__name=library_name)
         return librarian
-    except Library.DoesNotExist:
-        return None
     except Librarian.DoesNotExist:
+        # This catches if the library name doesn't exist or if a librarian is not assigned
         return None
