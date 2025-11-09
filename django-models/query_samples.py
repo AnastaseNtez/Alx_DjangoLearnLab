@@ -32,8 +32,7 @@ def librarian_for_library(library_name):
     Retrieve the librarian associated with a specific library.
     """
     try:
-        library = Library.objects.get(name=library_name)
-        librarian = library.librarian
+        librarian = Librarian.objects.get(library__name=library_name)
         return librarian
     except Library.DoesNotExist:
         return None
