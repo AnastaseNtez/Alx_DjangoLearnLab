@@ -17,7 +17,7 @@ urlpatterns = [
          LibraryDetailView.as_view(), 
          name='library_detail'),
     # Registration URL
-    path('register/', register, name='register'),
+    path('register/', views.register, name='register'),
 
     # Login URL (uses built-in LoginView)
     path('login/', LoginView.as_view(
@@ -28,6 +28,6 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(
         # The 'next_page' parameter tells Django where to redirect after logout.
         # It should match the name attribute of your login URL.
-        next_page='login' 
+        template_name='relationship_app/logout.html' 
     ), name='logout'),
 ]
