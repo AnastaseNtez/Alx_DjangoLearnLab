@@ -33,10 +33,10 @@ urlpatterns = [
    
     # --- NEW Secured Book Management Views (Admin/Librarian Access) ---
     # 1. Add Book (no primary key needed)
-    path('book/add/', views.add_book, name='add_book'),
+    path('add_book/', views.add_book, name='add_book'),
 
     # 2. Edit Book (requires primary key 'pk' in the URL)
-    path('book/edit/<int:pk>/', views.edit_book, name='edit_book'),
+    path('edit_book/<int:pk>/', views.edit_book, name='edit_book'),
 
     # 3. Delete Book (requires primary key 'pk' in the URL)
     path('book/delete/<int:pk>/', views.delete_book, name='delete_book'),
