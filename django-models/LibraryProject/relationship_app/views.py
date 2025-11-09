@@ -7,6 +7,7 @@ from .forms import CustomUserCreationForm # <-- Import the new form
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import user_passes_test # <-- NEW IMPORT
 from .models import Book, Library, UserProfile # <-- NEW IMPORT
+from django.contrib.auth.decorators import permission_required, user_passes_test
 
 # --- 1. Function-Based View (FBV): List all books ---
 def list_books(request):
@@ -69,6 +70,36 @@ def is_librarian(user):
 def is_member(user):
     return user.is_authenticated and user.userprofile.role == UserProfile.ROLE_MEMBER
 
+# --- NEW Permission-Secured Views ---
+@permission_required('relationship_app.can_add_book', raise_exception=True)
+def add_book(request):
+    """Secured view for adding new book entries."""
+    # In a real app, this would handle form submission (POST)
+    # For now, it just renders a success message if permission is granted
+    return render(request, 'relationship_app/book_message.html', {
+        'action': 'Add Book',
+        'message': 'Permission granted: You can create a new book.',
+    })
+
+@permission_required('relationship_app.can_change_book', raise_exception=True)
+def edit_book(request, pk):
+    """Secured view for editing existing book entries."""
+    # In a real app, you would fetch and edit the Book object with primary key (pk)
+    return render(request, 'relationship_app/book_message.html', {
+        'action': f'Edit Book ID: {pk}',
+        'message': 'Permission granted: You can edit this book.',
+    })
+
+@permission_required('relationship_app.can_delete_book', raise_exception=True)
+def delete_book(request, pk):
+    """Secured view for deleting book entries."""
+    # In a real app, this would handle the deletion logic
+    return render(request, 'relationship_app/book_message.html', {
+        'action': f'Delete Book ID: {pk}',
+        'message': 'Permission granted: You can delete this book.',
+    })
+
+
 # --- Role-Based Views ---
 @user_passes_test(is_admin)
 def admin_view(request):
@@ -87,3 +118,4 @@ def member_view(request):
     """View accessible only to Member users."""
     # Renders the member_view.html template
     return render(request, 'relationship_app/member_view.html', {'message': 'Welcome, Member!'})
+

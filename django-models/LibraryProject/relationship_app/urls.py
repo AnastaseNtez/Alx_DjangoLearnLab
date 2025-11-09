@@ -30,5 +30,15 @@ urlpatterns = [
     path('admin-panel/', views.admin_view, name='admin_panel'),
     path('librarian-dashboard/', views.librarian_view, name='librarian_dashboard'),
     path('member-area/', views.member_view, name='member_area'),
-    
+   
+    # --- NEW Secured Book Management Views (Admin/Librarian Access) ---
+    # 1. Add Book (no primary key needed)
+    path('book/add/', views.add_book, name='add_book'),
+
+    # 2. Edit Book (requires primary key 'pk' in the URL)
+    path('book/edit/<int:pk>/', views.edit_book, name='edit_book'),
+
+    # 3. Delete Book (requires primary key 'pk' in the URL)
+    path('book/delete/<int:pk>/', views.delete_book, name='delete_book'),
+
 ]
