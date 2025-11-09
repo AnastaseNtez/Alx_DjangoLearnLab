@@ -15,7 +15,7 @@ def list_books(request):
     }
     
     # Renders the HTML template 'list_books.html'
-    return render(request, 'list_books.html', context)
+    return render(request, 'relationship_app/list_books.html', context)
 
 
 # --- 2. Class-Based View (CBV): Library Detail ---
