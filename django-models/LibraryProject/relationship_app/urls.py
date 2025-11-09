@@ -12,7 +12,6 @@ urlpatterns = [
     path('library/<str:slug>/', views.LibraryDetailView.as_view(), name='library_detail'),
 
     # --- Authentication Views ---
-
     # 1. Registration (Checker looks for 'views.register')
     path('register/', views.register, name='register'), 
 
@@ -26,4 +25,10 @@ urlpatterns = [
         # Include the template_name fragment to satisfy the strict check
         template_name='relationship_app/logout.html'
     ), name='logout'),
+    
+    # --- NEW Role-Based Views ---
+    path('admin-panel/', views.admin_view, name='admin_panel'),
+    path('librarian-dashboard/', views.librarian_view, name='librarian_dashboard'),
+    path('member-area/', views.member_view, name='member_area'),
+    
 ]

@@ -5,6 +5,8 @@ from .models import Library, Book
 from django.contrib.auth import login
 from .forms import CustomUserCreationForm # <-- Import the new form
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import user_passes_test # <-- NEW IMPORT
+from .models import Book, Library, UserProfile # <-- NEW IMPORT
 
 # --- 1. Function-Based View (FBV): List all books ---
 def list_books(request):
@@ -56,3 +58,32 @@ def register(request):
         
     # Render the provided register.html template
     return render(request, 'relationship_app/register.html', {'form': form})
+
+# --- Role Check Helper Functions ---
+def is_admin(user):
+    return user.is_authenticated and user.userprofile.role == UserProfile.ROLE_ADMIN
+
+def is_librarian(user):
+    return user.is_authenticated and user.userprofile.role == UserProfile.ROLE_LIBRARIAN
+
+def is_member(user):
+    return user.is_authenticated and user.userprofile.role == UserProfile.ROLE_MEMBER
+
+# --- Role-Based Views ---
+@user_passes_test(is_admin)
+def admin_view(request):
+    """View accessible only to Admin users."""
+    # Renders the admin_view.html template
+    return render(request, 'relationship_app/admin_view.html', {'message': 'Welcome, Admin!'})
+
+@user_passes_test(is_librarian)
+def librarian_view(request):
+    """View accessible only to Librarian users."""
+    # Renders the librarian_view.html template
+    return render(request, 'relationship_app/librarian_view.html', {'message': 'Welcome, Librarian!'})
+
+@user_passes_test(is_member)
+def member_view(request):
+    """View accessible only to Member users."""
+    # Renders the member_view.html template
+    return render(request, 'relationship_app/member_view.html', {'message': 'Welcome, Member!'})
