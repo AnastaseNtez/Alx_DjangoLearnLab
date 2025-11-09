@@ -1,7 +1,9 @@
 
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic.detail import DetailView
 from .models import Library, Book
+from django.contrib.auth import login
+from .forms import CustomUserCreationForm # <-- Import the new form
 
 # --- 1. Function-Based View (FBV): List all books ---
 def list_books(request):
@@ -16,6 +18,7 @@ def list_books(request):
     
     # Renders the HTML template 'list_books.html'
     return render(request, 'relationship_app/list_books.html', context)
+
 
 
 # --- 2. Class-Based View (CBV): Library Detail ---
@@ -36,3 +39,19 @@ class LibraryDetailView(DetailView):
 
     # Note: The template 'library_detail.html' uses library.books.all, 
     # which automatically handles the Many-to-Many relationship.
+
+# --- New View: User Registration (FBV) ---
+def register(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Log the user in immediately after successful registration
+            login(request, user) 
+            # Redirect to a success page (e.g., the book list)
+            return redirect('list_books') 
+    else:
+        form = CustomUserCreationForm()
+        
+    # Render the provided register.html template
+    return render(request, 'relationship_app/register.html', {'form': form})

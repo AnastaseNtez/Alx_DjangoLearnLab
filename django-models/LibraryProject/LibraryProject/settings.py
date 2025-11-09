@@ -69,7 +69,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'LibraryProject.wsgi.application'
+# Define where Django should redirect after a successful login (e.g., to the book list)
+LOGIN_REDIRECT_URL = '/relationship/books/' 
 
+# Define where Django should redirect if a user tries to access a protected page
+# This should match the name attribute of your login URL
+LOGIN_URL = 'login'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
