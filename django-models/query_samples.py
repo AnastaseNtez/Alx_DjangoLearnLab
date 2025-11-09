@@ -32,7 +32,7 @@ def librarian_for_library(library_name):
     try:
         # spanning relationship lookup (library__name) to filter the Librarian
         
-        librarian = Librarian.objects.get(library__name=library_name)
+        librarian = Librarian.objects.get(library=library_name)
         return librarian
     except Librarian.DoesNotExist:
         # This catches if the library name doesn't exist or if a librarian is not assigned
