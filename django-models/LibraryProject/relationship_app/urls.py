@@ -26,8 +26,6 @@ urlpatterns = [
 
     # Logout URL (uses built-in LogoutView)
     path('logout/', LogoutView.as_view(
-        # The 'next_page' parameter tells Django where to redirect after logout.
-        # It should match the name attribute of your login URL.
         template_name='relationship_app/logout.html' 
     ), name='logout'),
 ]
