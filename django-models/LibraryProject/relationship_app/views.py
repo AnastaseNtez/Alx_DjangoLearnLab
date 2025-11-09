@@ -1,7 +1,7 @@
 
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import DetailView
-from .models import Book, Library
+from .models import Library, Book
 
 # --- 1. Function-Based View (FBV): List all books ---
 def list_books(request):
@@ -25,7 +25,7 @@ class LibraryDetailView(DetailView):
     model = Library
     
     # 2. Specify the name of the template to render
-    template_name = 'library_detail.html'
+    template_name = 'relationship_app/library_detail.html'
     
     # 3. Specify the context object name used in the template (default is 'object')
     context_object_name = 'library'
