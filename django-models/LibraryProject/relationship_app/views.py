@@ -4,6 +4,7 @@ from django.views.generic.detail import DetailView
 from .models import Library, Book
 from django.contrib.auth import login
 from .forms import CustomUserCreationForm # <-- Import the new form
+from django.contrib.auth.forms import UserCreationForm
 
 # --- 1. Function-Based View (FBV): List all books ---
 def list_books(request):
