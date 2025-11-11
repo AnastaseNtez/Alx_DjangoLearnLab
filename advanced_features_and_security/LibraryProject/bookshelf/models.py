@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings  # Import settings to reference AUTH_USER_MODEL
 
 
-# --- Custom User Manager (Step 3) ---
+
 class CustomUserManager(BaseUserManager):
     """
     Custom user manager to ensure new required fields are handled correctly
