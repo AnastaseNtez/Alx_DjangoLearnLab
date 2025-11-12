@@ -21,8 +21,10 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Add the path for relationship_app
+    # Include the URLs from the relationship_app (New line added/updated here)
     path('relationship/', include('relationship_app.urls')),
+    # Add auth URLs for login/logout (required for @login_required decorators to work)
+    path('accounts/', include('django.contrib.auth.urls')),
 ]
 
 # Serve media files during development

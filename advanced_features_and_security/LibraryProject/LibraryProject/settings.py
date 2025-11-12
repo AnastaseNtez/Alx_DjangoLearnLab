@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 # Set the custom user model to be used by Django's authentication system
 # Format is 'app_name.ModelName'
 AUTH_USER_MODEL = 'bookshelf.CustomUser'
+ROOT_URLCONF = 'LibraryProject.urls'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

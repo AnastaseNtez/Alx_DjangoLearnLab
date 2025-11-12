@@ -1,7 +1,14 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+# Note: The 'bookshelf' CustomUser is used here via get_user_model()
+
+from django.contrib.auth import get_user_model 
+User = get_user_model() 
+
+# --- Custom Permissions Setup (Step 1 & 5) ---
+# All custom permissions for the system are defined within the Book model.
 
 # Author Model
 class Author(models.Model):
@@ -15,13 +22,17 @@ class Author(models.Model):
 class Book(models.Model):
     title = models.CharField(max_length=200)
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='books')
+    
     class Meta:
         # Define the custom permissions here
         permissions = [
-            ("can_add_book", "Can add a book entry"),
-            ("can_change_book", "Can edit a book entry"),
-            ("can_delete_book", "Can delete a book entry"),
+            # CRUD permissions for the Book model
+            ("can_view", "Can view book list and details"),
+            ("can_create", "Can add a new book entry"),
+            ("can_edit", "Can modify an existing book entry"),
+            ("can_delete", "Can remove a book entry"),
         ]
+        ordering = ['title']
     
     def __str__(self):
         return self.title
@@ -58,8 +69,11 @@ class UserProfile(models.Model):
         (ROLE_MEMBER, 'Member'),
     ]
 
-    # OneToOne relationship to Django's built-in User model
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    # OneToOne relationship to your custom User model
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
     
     # Role field, defaulting to Member
     role = models.CharField(
@@ -72,13 +86,12 @@ class UserProfile(models.Model):
         return f"{self.user.username} - {self.role}"
 
 # Signal to automatically create UserProfile when a new User is created
-@receiver(post_save, sender=User)
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        # Automatically create profile and set default role to Member
         UserProfile.objects.create(user=instance, role=UserProfile.ROLE_MEMBER)
 
-@receiver(post_save, sender=User)
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def save_user_profile(sender, instance, **kwargs):
-    # Ensure the profile is saved when the user is saved (e.g., when updating username)
-    instance.userprofile.save()
+    if hasattr(instance, 'userprofile'):
+        instance.userprofile.save()
