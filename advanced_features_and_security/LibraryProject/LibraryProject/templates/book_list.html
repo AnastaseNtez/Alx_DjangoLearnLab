@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book List (Checker)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-xl">
+        <h1 class="text-3xl font-bold text-indigo-600 mb-4">Bookshelf Access Check</h1>
+        
+        <div class="p-4 bg-indigo-50 border-l-4 border-indigo-500 text-indigo-700 rounded-md mb-6">
+            <p class="font-semibold">Status: Access Granted.</p>
+            <p>This view requires the 'can_view' permission to render this page.</p>
+        </div>
+
+        {% if search_query %}
+            <div class="text-gray-700">
+                <p>Search Query: <span class="font-mono bg-yellow-100 p-1 rounded">{{ search_query }}</span></p>
+                <p>Result: {{ message }}</p>
+            </div>
+        {% else %}
+            <p class="text-gray-700">{{ message }}</p>
+        {% endif %}
+
+        <hr class="my-6">
+        
+        <h2 class="text-2xl font-semibold text-gray-800 mb-3">Form Demonstration Link</h2>
+        <p class="text-gray-600 mb-4">Click below to test the new form submission and validation view.</p>
+        <a href="{% url 'form_submit' %}" class="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 shadow-md">
+            Go to Example Form
+        </a>
+    </div>
+</body>
+</html>

@@ -1,8 +1,9 @@
 from django.shortcuts import render, HttpResponse
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import PermissionDenied
-from django.db.models import Q # <--- CRITICAL: Imports Q object for safe search
-from .models import Book # <--- CRITICAL: Imports the Book model
+from django.db.models import Q 
+from .models import Book 
+from .forms import ExampleForm # <--- NEW: Import the ExampleForm
 
 # --- Core Views for Permission Testing ---
 APP_LABEL = 'bookshelf'
@@ -17,9 +18,8 @@ def book_list_view(request):
         raise PermissionDenied("You do not have permission to view the book list.")
 
     # --- SQL INJECTION PREVENTION DEMONSTRATION ---
-    search_query = request.GET.get('q', '').strip() # Safely get user input and sanitize with .strip()
+    search_query = request.GET.get('q', '').strip() 
     
-    # Use Django's ORM to parameterize the query (prevents SQL Injection)
     if search_query:
         # Q objects allow complex 'OR' lookups across fields
         books = Book.objects.filter(
@@ -27,21 +27,58 @@ def book_list_view(request):
             Q(author__icontains=search_query) |
             Q(description__icontains=search_query)
         )
-        return HttpResponse(f"<h1>Book List (VIEW Permission Required)</h1><p>Access Granted: Found {books.count()} books matching '{search_query}'.</p>")
+        context = {
+            'search_query': search_query,
+            'books_count': books.count(),
+            'message': f"Found {books.count()} books matching '{search_query}'.",
+        }
+        return render(request, 'book_list.html', context)
+    
+    context = {
+        'search_query': None,
+        'books_count': Book.objects.count(),
+        'message': "You can see the list of all books (no search applied)."
+    }
+    return render(request, 'book_list.html', context)
     # --- END SQL INJECTION PREVENTION DEMO ---
 
-    return HttpResponse("<h1>Book List (VIEW Permission Required)</h1><p>Access Granted: You can see the list of all books.</p>")
+
+# --- NEW VIEW FOR FORM DEMONSTRATION (XSS and Validation) ---
+def form_submit_view(request):
+    """
+    Handles form submission using Django Forms for robust validation and XSS prevention.
+    """
+    submission_result = None
+    
+    if request.method == 'POST':
+        # 1. Bind POST data to the form
+        form = ExampleForm(request.POST)
+        
+        # 2. Validate the data
+        if form.is_valid():
+            # Data is clean, validated, and safe from XSS.
+            submission_result = form.cleaned_data
+            
+            # Re-render the page with the success message/result
+            # We pass a new empty form and the submission result
+            return render(request, 'form_example.html', {'form': ExampleForm(), 'submission_result': submission_result})
+        # If not valid, the form object now contains error messages for display.
+    else:
+        # Create an empty form for GET request
+        form = ExampleForm() 
+
+    # Render the template, passing the form (either empty or with errors)
+    return render(request, 'form_example.html', {'form': form})
+# --- END NEW VIEW ---
 
 
-# --- CRUD Views using Decorators ---
+# --- CRUD Views using Decorators (unchanged) ---
 
 @permission_required(f'{APP_LABEL}.can_create', raise_exception=True)
 def book_create_view(request):
     """
     Protected by the 'can_create' permission.
     """
-    # NOTE: In a real app, form validation (using Django Forms) is the primary
-    # way to sanitize and validate all POST data, preventing XSS and injection via input.
     return HttpResponse("<h1>Book Creation Form (CREATE Permission Required)</h1><p>Access Granted: You can create a new book.</p>")
 
 
