@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Homepage</title>
+    <!-- Load Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-100 flex flex-col">
+
+    <header class="bg-indigo-600 shadow-md">
+        <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-white">Library System</div>
+            <div class="space-x-4">
+                {% if user.is_authenticated %}
+                    <span class="text-white text-sm">Welcome, <strong class="font-semibold">{{ user.username }}</strong>!</span>
+                    {% if user.is_staff %}
+                        <a href="/admin/" class="text-indigo-200 hover:text-white transition duration-150">Admin Panel</a>
+                    {% endif %}
+                    <a href="{% url 'logout' %}" class="bg-indigo-700 hover:bg-indigo-800 text-white font-medium py-1.5 px-3 rounded-lg text-sm transition duration-150">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="bg-indigo-700 hover:bg-indigo-800 text-white font-medium py-1.5 px-3 rounded-lg text-sm transition duration-150">Login</a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-6">
+        <div class="bg-white p-10 rounded-xl shadow-2xl text-center max-w-lg">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">
+                {% if user.is_authenticated %}
+                    Access Granted!
+                {% else %}
+                    Welcome to the Library System!
+                {% endif %}
+            </h2>
+            <p class="text-lg text-gray-600 mb-6">
+                This is the standard landing page for all users.
+            </p>
+
+            <div class="space-y-3">
+                {% if user.is_authenticated %}
+                    <p class="text-indigo-600 font-medium">You are currently logged in as a **{% if user.is_staff %}Staff/Admin{% else %}Standard{% endif %}** user.</p>
+                    
+                    <a href="{% url 'book_list' %}" class="block w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-semibold transition">
+                        Go to Bookshelf App Views
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="block w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition">
+                        Click here to Log In
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</body>
+</html>
