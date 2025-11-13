@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Form Submission Example</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for a modern look */
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+    
+    <!-- Main Content Card -->
+    <div class="w-full max-w-lg bg-white shadow-xl rounded-xl p-8 space-y-6">
+        
+        <h1 class="text-3xl font-extrabold text-indigo-700 border-b pb-2 mb-4">
+            Secure Form Demo (XSS Prevention)
+        </h1>
+        
+        <p class="text-gray-600">
+            This form uses Django's **CSRF token** and **automatic field escaping** to prevent Cross-Site Request Forgery and XSS attacks. Try submitting a script tag in the `message` field to see it rendered safely.
+        </p>
+
+        <!-- Display Submission Result -->
+        {% if submission_result %}
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                <strong class="font-bold">Success!</strong>
+                <span class="block sm:inline"> Form submitted and validated.</span>
+                <div class="mt-2 p-3 bg-green-50 rounded">
+                    <!-- Django's template engine automatically escapes content here, preventing XSS -->
+                    <p class="font-semibold text-green-800">Submitted Name: <span class="font-normal">{{ submission_result.name }}</span></p>
+                    <p class="font-semibold text-green-800">Submitted Message (Safely Escaped):</p>
+                    <div class="p-2 border border-green-300 bg-white rounded overflow-x-auto text-sm text-gray-800">
+                        <!-- If the user entered <script>alert('XSS')</script>, it will show up as raw text here -->
+                        {{ submission_result.message }}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Form Section -->
+        <form method="post" action="{% url 'form_submit' %}" class="space-y-4">
+            
+            <!-- CRITICAL: Django's CSRF Protection Tag -->
+            <!-- This tag injects a hidden token, protecting against Cross-Site Request Forgery -->
+            {% csrf_token %}
+
+            <!-- Display Form Fields -->
+            <div class="space-y-4">
+                {{ form.as_p }}
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out shadow-lg">
+                Submit Securely
+            </button>
+            
+        </form>
+
+        <a href="{% url 'book_list' %}" class="block text-center text-sm text-indigo-600 hover:text-indigo-800 pt-4 border-t mt-4">
+            ← Back to Book List
+        </a>
+    </div>
+
+</body>
+</html>
