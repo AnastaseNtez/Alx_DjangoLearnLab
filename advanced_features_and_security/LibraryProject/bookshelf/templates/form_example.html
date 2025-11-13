@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Form Example</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+        <h1 class="text-3xl font-bold text-indigo-700 mb-6 text-center">Secure Form Submission</h1>
+        
+        <form method="post" action="{% url 'form_submit' %}" class="space-y-6">
+            
+            <!-- CRITICAL: CSRF Protection -->
+            {% csrf_token %}
+
+            <!-- Form rendering using Bootstrap-like styling with Tailwind -->
+            <div class="space-y-4">
+                {% for field in form %}
+                    <div>
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ field.label }}
+                        </label>
+                        {{ field }}
+                        <p class="mt-1 text-xs text-gray-500">{{ field.help_text }}</p>
+                        <!-- Display non-field errors -->
+                        {% if field.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ field.errors }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Display non-field errors at the top -->
+            {% if form.non_field_errors %}
+                <div class="p-3 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-md">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <button type="submit" 
+                    class="w-full py-2 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                Submit Book Data
+            </button>
+        </form>
+
+        {% if submission_result %}
+            <div class="mt-8 p-4 rounded-lg bg-green-50 border border-green-300">
+                <h3 class="text-xl font-semibold text-green-700 mb-2">Submission Result (Safe Output)</h3>
+                <p class="text-gray-700"><strong>Title:</strong> {{ submission_result.title }}</p>
+                <p class="text-gray-700"><strong>Author:</strong> {{ submission_result.author }}</p>
+                <p class="text-gray-700"><strong>Rating:</strong> {{ submission_result.rating }}</p>
+                <p class="mt-2 text-sm text-green-600">Note: Data displayed here is safely escaped by Django, preventing XSS.</p>
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>
