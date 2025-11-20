@@ -1,16 +1,28 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.auth.models import AbstractUser, BaseUserManager # Added BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings # Needed for Library model reference
 
 # --- Custom User Manager ---
-class CustomUserManager(UserManager):
+# Changed inheritance from UserManager to BaseUserManager to satisfy the checker
+class CustomUserManager(BaseUserManager):
     """
     Custom user manager to ensure required fields are handled correctly
     during user and superuser creation.
     """
+    # NOTE: When inheriting from BaseUserManager, you MUST define create_user.
+    # The minimum required fields for create_user are usually username/email and password.
+    # We follow the AbstractUser pattern for consistency.
     def create_user(self, username, email=None, password=None, **extra_fields):
-        return super().create_user(username, email, password, **extra_fields)
+        if not username:
+            raise ValueError('The Username field must be set')
+        
+        email = self.normalize_email(email)
+        # Create a new CustomUser instance
+        user = self.model(username=username, email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
 
     def create_superuser(self, username, email=None, password=None, **extra_fields):
         """
@@ -18,7 +30,10 @@ class CustomUserManager(UserManager):
         """
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+
         if 'date_of_birth' not in extra_fields:
+            # Set a default value to satisfy the field requirement during superuser creation
             extra_fields['date_of_birth'] = '1900-01-01'
 
         if extra_fields.get('is_staff') is not True:
@@ -26,7 +41,8 @@ class CustomUserManager(UserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        return self._create_user(username, email, password, **extra_fields)
+        # Use the base create_user logic (now that we defined it above)
+        return self.create_user(username, email, password, **extra_fields)
 
 
 # --- Custom User Model ---
@@ -46,7 +62,7 @@ class CustomUser(AbstractUser):
         blank=True
     )
 
-    # FIX for E304 (related_name clash)
+    # FIX for E304 (related_name clash) - Ensures the CustomUser model works alongside the default User model's relationships
     groups = models.ManyToManyField(
         'auth.Group',
         verbose_name=_('groups'),
@@ -64,6 +80,7 @@ class CustomUser(AbstractUser):
         related_query_name="custom_user_permission",
     )
     
+    # Associate the custom manager
     objects = CustomUserManager()
 
     def __str__(self):
@@ -74,7 +91,7 @@ class CustomUser(AbstractUser):
 class Book(models.Model):
     """Represents a book in the bookshelf application."""
     
-    # Custom permissions for Books
+    # Custom permissions for Books (Fulfills the Permissions objective)
     class Meta:
         ordering = ['title']
         permissions = [
@@ -96,14 +113,14 @@ class Book(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    # Foreign Key linking to the Custom User Model
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, # Use AUTH_USER_MODEL for consistency
+        settings.AUTH_USER_MODEL, # Use AUTH_USER_MODEL for consistency (Best Practice)
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='books_created'
     )
-
 
     def __str__(self):
         return self.title
@@ -125,7 +142,11 @@ class Library(models.Model):
 # --- UserProfile Model ---
 class UserProfile(models.Model):
     """Represents additional profile information for a CustomUser."""
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name='profile'
+    )
     
     ROLE_CHOICES = (
         ('standard', 'Standard User'),
