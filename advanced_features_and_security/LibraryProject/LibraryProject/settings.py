@@ -178,3 +178,4 @@ SECURE_BROWSER_XSS_FILTER = True
 # If your reverse proxy adds X-Forwarded-Proto, uncomment the following:
 # USE_X_FORWARDED_HOST = True
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+AUTH_USER_MODEL = 'bookshelf.CustomUser'
