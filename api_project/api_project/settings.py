@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api',
+    # REQUIRED for Token Authentication (Step 1)
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -122,3 +124,20 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# --- REST FRAMEWORK CONFIGURATION (Step 1) ---
+
+REST_FRAMEWORK = {
+    # Define the default authentication methods for DRF.
+    # We include SessionAuthentication for the browsable API and TokenAuthentication for external clients.
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication', # <-- Token Auth Enabled
+    ],
+    # Define the default permission policy.
+    # This sets a safe default, allowing read-only access by default.
+    # It will be overridden specifically in api/views.py for the ViewSet.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly'
+    ]
+}
