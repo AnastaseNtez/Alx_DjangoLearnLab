@@ -1,12 +1,19 @@
-from django.urls import path
-from .views import BookList
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter # 1. Import DefaultRouter
+from .views import BookList, BookViewSet # 2. Import the new ViewSet
 
-# Define the namespace for this application's URLs
-app_name = 'api'
+# 3. Create a router instance
+router = DefaultRouter()
 
+# 4. Register the ViewSet
+router.register(r'books_all', BookViewSet, basename='book_all')
+
+# 5. Define the urlpatterns
 urlpatterns = [
-    # Maps the 'books/' path to the BookList view. 
-    # This will handle GET requests to retrieve the list of books.
-    # The full path will be /api/books/ (due to the include in project urls.py)
+    # Route 1: Simple list view (ListAPIView) at /books/
     path('books/', BookList.as_view(), name='book-list'),
+
+    # Route 2: Include the router URLs. 
+    # This must be the last entry to catch all router-generated paths.
+    path('', include(router.urls)), 
 ]

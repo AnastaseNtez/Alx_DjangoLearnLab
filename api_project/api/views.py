@@ -1,21 +1,23 @@
 from rest_framework import generics
+from rest_framework import viewsets
 from .models import Book
 from .serializers import BookSerializer
 
+# --- 1. Simple List View (retained for the 'books/' path) ---
 class BookList(generics.ListAPIView):
     """
-    API view to list all Book instances.
-    
-    Inherits from ListAPIView, which provides a read-only endpoint for 
-    a collection of model instances.
-    
-    This view handles HTTP GET requests to retrieve the list of books.
+    List all books (GET only).
+    This serves the path 'books/'
     """
-    
-    # 1. Define the queryset: The data that should be returned by this view
-    # In this case, it's all objects from the Book model.
     queryset = Book.objects.all()
-    
-    # 2. Define the serializer class: How the queryset data should be formatted
-    # (i.e., converted from model instances to JSON).
+    serializer_class = BookSerializer
+
+# --- 2. Full CRUD ViewSet (NEW) ---
+class BookViewSet(viewsets.ModelViewSet):
+    """
+    A ViewSet that automatically provides 'list', 'create', 'retrieve',
+    'update', 'partial_update', and 'destroy' actions.
+    This serves the paths 'books_all/' and 'books_all/<pk>/'
+    """
+    queryset = Book.objects.all()
     serializer_class = BookSerializer
