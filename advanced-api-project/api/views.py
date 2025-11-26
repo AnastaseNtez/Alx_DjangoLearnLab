@@ -1,6 +1,8 @@
 # api/views.py
 
-from rest_framework import generics, permissions
+from rest_framework import generics
+# Make sure your import statement looks EXACTLY like this:
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from .models import Book
 from .serializers import BookSerializer
 
@@ -22,7 +24,7 @@ class BookListCreateView(generics.ListCreateAPIView):
     serializer_class = BookSerializer
     
     # Permissions: Read-only access for unauthenticated users, Write access for authenticated users.
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly] 
+    permission_classes = [IsAuthenticatedOrReadOnly] 
 
 # --- Book Detail, Update, and Delete View ---
 
@@ -43,4 +45,4 @@ class BookRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BookSerializer
     
     # Permissions: Read-only access for unauthenticated users, Write access for authenticated users.
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly]
