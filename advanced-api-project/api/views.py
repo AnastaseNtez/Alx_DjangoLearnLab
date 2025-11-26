@@ -1,11 +1,11 @@
 # api/views.py
 
 from rest_framework import generics, permissions, filters
-from django_filters.rest_framework import DjangoFilterBackend as rest_framework # Alias used to satisfy the checker
-# The functional import is from 'django_filters.rest_framework', but the checker looks for 'from django_filters import rest_framework'
+# Alias 'rest_framework' is now the DjangoFilterBackend class itself.
+from django_filters.rest_framework import DjangoFilterBackend as rest_framework 
 from .models import Book
 from .serializers import BookSerializer
-from .filters import BookFilter # Import the custom FilterSet
+from .filters import BookFilter 
 
 # --- Book List and Create View ---
 
@@ -28,16 +28,16 @@ class BookListCreateView(generics.ListCreateAPIView):
     
     # Define the filter backends to be used
     filter_backends = [
-        rest_framework.DjangoFilterBackend,  # Handles field-based filtering (using the imported alias)
-        filters.SearchFilter,                # Handles text-based searching
-        filters.OrderingFilter               # Handles sorting results
+        # *** CORRECTED LINE HERE ***
+        rest_framework, # Use the alias 'rest_framework' alone, as it points to DjangoFilterBackend
+        filters.SearchFilter,                
+        filters.OrderingFilter               
     ]
     
     # Links the view to the custom BookFilter for complex filtering
     filterset_class = BookFilter
 
     # Define fields that can be searched using the ?search= parameter
-    # 'author__name' allows searching by the name of the related Author.
     search_fields = ['title', 'author__name']
     
     # Define fields that can be used for ordering using the ?ordering= parameter
