@@ -5,6 +5,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import Book
 from .serializers import BookSerializer
 from .filters import BookFilter 
+import django_filters
+
 
 # --- ListView (ListAPIView) ---
 # Required Class Name: ListView
