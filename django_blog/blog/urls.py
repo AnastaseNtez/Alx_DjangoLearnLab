@@ -1,12 +1,13 @@
 from django.urls import path
+from django.contrib.auth import views as auth_views
 from . import views
 
 # Set the application namespace for reverse lookups (e.g., 'blog:post-detail')
 app_name = 'blog'
 
 urlpatterns = [
-    
     path('register/', views.register, name='register'),
+    
     path('profile/', views.profile, name='profile'),
     
     
@@ -23,14 +24,13 @@ urlpatterns = [
     
     path('post/<int:pk>/delete/', views.PostDeleteView.as_view(), name='post-delete'),
     
-    
-    # Create Comment (Uses the function-based view, linked to the Post's PK)
     path('post/<int:pk>/comments/new/', views.CommentCreateView.as_view(), name='comment-create'),
 
-    # Update Comment (Uses the Comment's PK)
-    # The URL pattern for the comment PK must be different from the post PK to ensure the URL resolver works correctly.
     path('comment/<int:pk>/update/', views.CommentUpdateView.as_view(), name='comment-update'),
     
-    # Delete Comment (Uses the Comment's PK)
     path('comment/<int:pk>/delete/', views.CommentDeleteView.as_view(), name='comment-delete'),
+   
+    path('login/', auth_views.LoginView.as_view(template_name='blog/login.html'), name='login'),
+
+    path('logout/', auth_views.LogoutView.as_view(template_name='blog/logout.html'), name='logout'),  
 ]
