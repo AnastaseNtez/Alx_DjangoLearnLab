@@ -7,6 +7,7 @@ app_name = 'blog'
 
 urlpatterns = [
     path('register/', views.register, name='register'),
+    path('tags/<slug:tag_slug>/', views.PostByTagListView.as_view(), name='post-by-tag'),
 
     path('profile/', views.profile, name='profile'),
     
@@ -34,5 +35,5 @@ urlpatterns = [
 
     path('logout/', auth_views.LogoutView.as_view(template_name='blog/logout.html'), name='logout'),
 
-    path('tag/<slug:tag_slug>/', views.PostListView.as_view(), name='post-list-by-tag'), 
+    path('tags/<slug:tag_slug>/', views.PostListView.as_view(), name='post-list-by-tag'), 
 ]

@@ -118,3 +118,25 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
     def get_success_url(self):
         # Fallback success URL for Django machinery
         return reverse('blog:post-detail', kwargs={'pk': self.kwargs.get('pk')})
+    
+# REQUIRED VIEW: List posts filtered by a specific tag
+class PostByTagListView(PostListView):
+    """
+    Lists posts that have a specific tag, identified by the slug in the URL.
+    Inherits from PostListView to reuse template and pagination settings.
+    """
+    def get_queryset(self):
+        # 1. Start with the default, ordered queryset (from PostListView)
+        queryset = super().get_queryset()
+        
+        # 2. Get the tag slug from the URL parameters (captured by the URL pattern)
+        tag_slug = self.kwargs.get('tag_slug')
+
+        if tag_slug:
+            # 3. Filter the queryset: only include posts that are linked to a Tag 
+            #    where the tag's slug matches the URL slug.
+            #    'tags__slug' traverses the ManyToMany relationship to the Tag model.
+            queryset = queryset.filter(tags__slug=tag_slug)
+        
+        # This filtered queryset is then used by the ListView to render the page
+        return queryset
