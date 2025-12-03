@@ -1,19 +1,30 @@
 from django.urls import path
-from . import views # Correctly imports views.py from the current (blog) directory
 from django.contrib.auth import views as auth_views
+from . import views # Still needed for register, profile, and old home_page
+from .views import (
+    # These imports are for the new CRUD Class-Based Views (CBVs)
+    PostListView,
+    PostDetailView,
+    PostCreateView,
+    PostUpdateView,
+    PostDeleteView
+)
 
-# Sets the namespace for this app, e.g., blog:home
-app_name = 'blog' 
+# Namespace for this app, required for {% url 'blog:...' %} in templates
+app_name = 'blog'
 
 urlpatterns = [
-    path('', views.home_page, name='blog-home'),
+    path('', PostListView.as_view(), name='blog-home'),
    
+    path('new/', PostCreateView.as_view(), name='post-create'),
+    
+    path('<int:pk>/', PostDetailView.as_view(), name='post-detail'),
+    
+    path('<int:pk>/edit/', PostUpdateView.as_view(), name='post-update'),
+    path('<int:pk>/delete/', PostDeleteView.as_view(), name='post-delete'),
     path('register/', views.register, name='register'),
-    
-    # 3. User profile page
     path('profile/', views.profile, name='profile'),
-    
     path('login/', auth_views.LoginView.as_view(template_name='blog/login.html'), name='login'),
-    
     path('logout/', auth_views.LogoutView.as_view(template_name='blog/logout.html'), name='logout'),
+    
 ]

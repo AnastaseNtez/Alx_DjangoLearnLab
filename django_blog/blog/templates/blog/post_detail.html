@@ -1,0 +1,49 @@
+{% extends "blog/base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+    <article class="bg-white rounded-xl shadow-2xl p-8 md:p-12">
+        <!-- Post Header -->
+        <header class="border-b pb-4 mb-6">
+            <h1 class="text-4xl font-extrabold text-gray-900 leading-tight mb-2">
+                {{ post.title }}
+            </h1>
+            <div class="flex justify-between items-center text-sm text-gray-500">
+                <p>
+                    By <span class="font-semibold text-indigo-600">@{{ post.author.username }}</span> 
+                    on {{ post.date_posted|naturalday }}
+                </p>
+
+                <!-- Conditional Links for Author (Update/Delete) -->
+                {% if post.author == user %}
+                <div class="space-x-4">
+                    <a href="{% url 'blog:post-update' post.id %}" 
+                       class="text-green-600 hover:text-green-800 transition duration-150 font-medium">
+                        Edit
+                    </a>
+                    <a href="{% url 'blog:post-delete' post.id %}" 
+                       class="text-red-600 hover:text-red-800 transition duration-150 font-medium">
+                        Delete
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- Post Content -->
+        <section class="prose max-w-none text-gray-800 leading-relaxed text-lg">
+            <p>{{ post.content|linebreaksbr }}</p>
+        </section>
+
+        <!-- Back to Blog Link -->
+        <footer class="mt-8 pt-6 border-t">
+             <a href="{% url 'blog:blog-home' %}" 
+               class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium">
+                <svg class="mr-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Back to Blog Home
+            </a>
+        </footer>
+    </article>
+</div>
+{% endblock content %}

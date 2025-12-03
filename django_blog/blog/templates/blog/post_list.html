@@ -1,33 +1,69 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Django Blog{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-</head>
-<body>
-    <header>
-        <nav>
-            <ul>
-                <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="{% url 'posts' %}">Blog Posts</a></li>
-                <li><a href="{% url 'login' %}">Login</a></li>
-                <li><a href="{% url 'register' %}">Register</a></li>
-            </ul>
-        </nav>
-    </header>
+{% extends "blog/base.html" %}
+{% load humanize %}
 
-    <div class="content">
-        {% block content %}
-        <!-- Page-specific content goes here -->
-        {% endblock %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-extrabold text-gray-900 mb-6 border-b pb-2">
+        Latest Blog Posts
+    </h1>
+
+    {% if posts %}
+        <!-- Responsive grid for posts -->
+        <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {% for post in posts %}
+                <article class="bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4 text-sm text-gray-500">
+                            <!-- Display post author and date -->
+                            <span class="font-semibold text-indigo-600 hover:text-indigo-800 transition duration-150">
+                                @{{ post.author.username }}
+                            </span>
+                            <span class="text-xs">
+                                Posted {{ post.date_posted|naturalday }}
+                            </span>
+                        </div>
+                        
+                        <!-- Post Title (Linked to detail view) -->
+                        <h2 class="text-2xl font-bold text-gray-900 hover:text-indigo-600 transition duration-150 mb-3">
+                            <a href="{% url 'blog:post-detail' post.id %}">{{ post.title }}</a>
+                        </h2>
+
+                        <!-- Post Snippet (Truncated content) -->
+                        <p class="text-gray-700 text-base mb-4 line-clamp-3">
+                            {{ post.content|truncatechars:150 }}
+                        </p>
+
+                        <!-- Read More Link -->
+                        <a href="{% url 'blog:post-detail' post.id %}" 
+                           class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium">
+                            Read Full Post 
+                            <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        </a>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center text-gray-500 text-lg">No posts have been published yet. Be the first to <a href="{% url 'blog:post-create' %}" class="text-indigo-600 hover:underline">create one</a>!</p>
+    {% endif %}
+
+    <!-- Pagination Logic (Handles the PostListView's paginator) -->
+    {% if is_paginated %}
+    <div class="flex justify-center mt-10 space-x-2">
+        {% if page_obj.has_previous %}
+            <a href="?page=1" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">First</a>
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">Previous</a>
+        {% endif %}
+
+        <span class="px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 border border-indigo-300 rounded-lg">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">Last</a>
+        {% endif %}
     </div>
-
-    <footer>
-        <p>&copy; 2025 Django Blog</p>
-    </footer>
-
-    <script src="{% static 'js/scripts.js' %}"></script>
-</body>
-</html>
+    {% endif %}
+</div>
+{% endblock content %}
