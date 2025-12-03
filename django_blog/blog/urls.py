@@ -25,12 +25,12 @@ urlpatterns = [
     
     
     # Create Comment (Uses the function-based view, linked to the Post's PK)
-    path('posts/int:post_id/comments/new/', views.CommentCreateView.as_view(), name='comment-create'),
+    path('comment/<int:pk>/new/', views.CommentCreateView.as_view(), name='comment-create'),
 
     # Update Comment (Uses the Comment's PK)
     # The URL pattern for the comment PK must be different from the post PK to ensure the URL resolver works correctly.
-    path('posts/int:post_id/comments/update/', views.CommentUpdateView.as_view(), name='comment-update'),
+    path('comment/<int:pk>/update/', views.CommentUpdateView.as_view(), name='comment-update'),
     
     # Delete Comment (Uses the Comment's PK)
-    path('posts/int:post_id/comments/delete/', views.CommentDeleteView.as_view(), name='comment-delete'),
+    path('comment/<int:pk>/delete/', views.CommentDeleteView.as_view(), name='comment-delete'),
 ]
