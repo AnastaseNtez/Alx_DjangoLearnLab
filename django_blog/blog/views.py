@@ -1,29 +1,24 @@
-from django.shortcuts import render, redirect
-# New: Required for successful redirects after CBV operations
-from django.urls import reverse_lazy 
-from django.contrib import messages
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages # Required for the register function
 from django.contrib.auth.decorators import login_required
-# New: Required for access control (security) on CBVs
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin 
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.urls import reverse_lazy, reverse
+from django.http import HttpResponseRedirect 
 
-# New: Imports for all five Class-Based Views
+# Import generic Class-Based Views
 from django.views.generic import (
-    ListView, 
-    DetailView, 
-    CreateView, 
-    UpdateView, 
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
     DeleteView
 )
 
-# New: Import the Post model and the required PostForm
-from .models import Post 
-# Ensure you import both the user form and the new Post form
-from .forms import CustomUserCreationForm, PostForm 
+# Import all necessary models and forms
+from .models import Post, Comment 
+from .forms import PostForm, CommentForm, CustomUserCreationForm 
 
-# --- EXISTING AUTHENTICATION VIEWS (Kept from your original file) ---
-
-# NOTE: The simple placeholder 'home_page' is removed. 
-# The PostListView class below will now handle the main blog feed ('blog-home').
+# --- AUTHENTICATION VIEWS ---
 
 def register(request):
     """
@@ -51,14 +46,14 @@ def profile(request):
     return render(request, 'blog/profile.html', context)
 
 
-# --- NEW CRUD Views for Post Management ---
+# --- POST CRUD VIEWS ---
 
 class PostListView(ListView):
     """
     Displays a list of all blog posts (Read All). This serves as the main blog feed.
     """
     model = Post
-    template_name = 'blog/post_list.html'  
+    template_name = 'blog/post_list.html' 
     context_object_name = 'posts'
     ordering = ['-date_posted'] # Order newest post first
     paginate_by = 10 
@@ -66,15 +61,22 @@ class PostListView(ListView):
 class PostDetailView(DetailView):
     """
     Displays a single blog post in full detail (Read One).
+    Modified to also pass the CommentForm to the template.
     """
     model = Post
     template_name = 'blog/post_detail.html' 
     context_object_name = 'post'
+    
+    def get_context_data(self, **kwargs):
+        """Adds the CommentForm instance to the context."""
+        context = super().get_context_data(**kwargs)
+        # Pass an instance of the CommentForm to the template
+        context['comment_form'] = CommentForm() 
+        return context
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     """
     Allows authenticated users to create a new post (Create).
-    Uses LoginRequiredMixin to ensure only logged-in users can access.
     """
     model = Post
     form_class = PostForm 
@@ -88,33 +90,93 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """
     Allows the post author to update their post (Update).
-    Uses UserPassesTestMixin to ensure only the original author can update.
     """
     model = Post
     form_class = PostForm
     template_name = 'blog/post_form.html'
 
     def form_valid(self, form):
-        # We ensure the author remains the logged-in user
         form.instance.author = self.request.user
         return super().form_valid(form)
 
     def test_func(self):
-        # Check if the current user is the author of the post they are trying to update.
+        # Check if the current user is the author of the post.
         post = self.get_object() 
         return self.request.user == post.author
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     """
     Allows the post author to delete their post (Delete).
-    Uses UserPassesTestMixin to ensure only the original author can delete.
     """
     model = Post
     template_name = 'blog/post_confirm_delete.html' 
-    # Redirect back to the blog home list after successful deletion
     success_url = reverse_lazy('blog:blog-home') 
 
     def test_func(self):
-        # Check if the current user is the author of the post they are trying to delete.
+        # Check if the current user is the author of the post.
         post = self.get_object() 
         return self.request.user == post.author
+
+# --- COMMENT CRUD VIEWS ---
+
+@login_required
+def add_comment(request, pk):
+    """
+    Function-Based View to handle the creation of a new comment (Create).
+    It redirects back to the post detail page upon success or failure.
+    """
+    post = get_object_or_404(Post, pk=pk)
+    
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            # Create, but do not save to the database yet
+            comment = form.save(commit=False)
+            
+            # Set the required foreign keys
+            comment.post = post
+            comment.author = request.user
+            
+            # Save the comment
+            comment.save()
+            
+            # Redirect back to the post detail page
+            return HttpResponseRedirect(post.get_absolute_url())
+    
+    # If not a POST request or form is invalid, redirect back
+    return HttpResponseRedirect(post.get_absolute_url())
+
+
+class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """
+    Class-Based View to handle editing an existing comment (Update).
+    Only the comment author can access this.
+    """
+    model = Comment
+    form_class = CommentForm
+    template_name = 'blog/comment_form.html'
+    
+    def test_func(self):
+        """Ensures only the comment author can edit the comment."""
+        comment = self.get_object()
+        return self.request.user == comment.author
+
+
+class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """
+    Class-Based View to handle deleting an existing comment (Delete).
+    Only the comment author can access this.
+    """
+    model = Comment
+    template_name = 'blog/comment_confirm_delete.html'
+    
+    def get_success_url(self):
+        """Redirects to the parent post detail page after successful deletion."""
+        comment = self.get_object()
+        # Use reverse_lazy for the redirect URL
+        return reverse_lazy('blog:post-detail', kwargs={'pk': comment.post.pk})
+
+    def test_func(self):
+        """Ensures only the comment author can delete the comment."""
+        comment = self.get_object()
+        return self.request.user == comment.author

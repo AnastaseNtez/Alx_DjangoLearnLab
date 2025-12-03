@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from .models import Post 
 # Removed: from .forms import CustomUserCreationForm, PostForm (This caused the recursive import error)
 
+from .models import Post, Comment # Ensure Comment is imported
 
 # Assuming this form is for user registration
 class CustomUserCreationForm(forms.ModelForm):
@@ -24,3 +25,18 @@ class PostForm(forms.ModelForm):
         model = Post
         # We only need the user to input the title and content
         fields = ['title', 'content']
+
+# --- NEW: CommentForm for creating and editing comments ---
+class CommentForm(forms.ModelForm):
+    """
+    ModelForm specifically for the Comment model.
+    It only exposes the content field to the user.
+    """
+    class Meta:
+        model = Comment
+        # Only include content, the rest (post, author, dates) are set in the view
+        fields = ['content']
+        widgets = {
+            # Use Textarea for a larger input box, with a helpful placeholder
+            'content': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Write your comment here...'}),
+        }
