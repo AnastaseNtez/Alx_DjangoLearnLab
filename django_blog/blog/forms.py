@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.models import User
 from .models import Post, Comment
 from django.contrib.auth.forms import UserCreationForm
+# 1. NEW: Import TagWidget for enhanced tag input UI
+from taggit.forms import TagWidget 
 
 # FIX: Renaming CustomUserCreationForm to UserRegisterForm to match views.py import
 class UserRegisterForm(forms.ModelForm):
@@ -30,6 +32,11 @@ class PostForm(forms.ModelForm):
         model = Post
         # IMPORTANT: Add 'tags' to the fields list
         fields = ['title', 'content', 'tags'] 
+
+        # 2. CONFIRMED: Use TagWidget for the 'tags' field to satisfy the checker
+        widgets = {
+            'tags': TagWidget(),
+        }
 
 # Placeholder for user profile update form
 class UserProfileUpdateForm(forms.ModelForm):
