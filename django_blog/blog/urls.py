@@ -30,7 +30,7 @@ urlpatterns = [
     # --- COMMENT VIEWS (CRUD) ---
     
     # Create Comment (Uses the function-based view, linked to the Post's PK)
-    path('post/<int:pk>/comment/add/', views.add_comment, name='add-comment'),
+    path('<int:pk>/comment/new/', views.CommentCreateView.as_view(), name='comment-create'),
 
     # Update Comment (Uses the Comment's PK)
     # The URL pattern for the comment PK must be different from the post PK to ensure the URL resolver works correctly.

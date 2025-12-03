@@ -1,0 +1,42 @@
+{% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8 max-w-lg">
+    <div class="bg-white p-6 rounded-lg shadow-xl">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">
+            Add a Comment
+        </h1>
+
+        <!-- The form action is set up by Django's CreateView to point to itself -->
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <fieldset class="form-group space-y-4">
+                <!--
+                    Using crispy_forms_tags to render the form fields nicely.
+                    Since we only use the 'body' field in CommentForm, it will render just that.
+                -->
+                {{ form|crispy }}
+            </fieldset>
+
+            <div class="form-group">
+                <button 
+                    class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition duration-150 ease-in-out shadow-md" 
+                    type="submit">
+                    Post Comment
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Link back to the original post -->
+    {% if view.get_post %}
+    <div class="mt-6 text-center">
+        <a href="{% url 'blog:post-detail' pk=view.get_post.pk %}" class="text-indigo-600 hover:text-indigo-800 font-medium transition duration-150 ease-in-out">
+            &larr; Cancel and Go Back to Post
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock content %}
