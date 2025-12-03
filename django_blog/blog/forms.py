@@ -1,42 +1,50 @@
 from django import forms
 from django.contrib.auth.models import User
-# We need to import the Post model to create a ModelForm for it
-from .models import Post 
-# Removed: from .forms import CustomUserCreationForm, PostForm (This caused the recursive import error)
+from .models import Post, Comment
+from django.contrib.auth.forms import UserCreationForm
 
-from .models import Post, Comment # Ensure Comment is imported
-
-# Assuming this form is for user registration
-class CustomUserCreationForm(forms.ModelForm):
-    # This structure is commonly used for custom registration forms
+# FIX: Renaming CustomUserCreationForm to UserRegisterForm to match views.py import
+class UserRegisterForm(forms.ModelForm):
+    """
+    Form used for user registration, matching the name expected by blog/views.py.
+    """
+    password = forms.CharField(widget=forms.PasswordInput())
+    
     class Meta:
         model = User
         fields = ['username', 'email', 'password']
-        widgets = {
-            'password': forms.PasswordInput(),
-        }
+        # Note: You might need to use a custom User model if you extend it later.
+        
+    # Example of saving the user with proper password hashing
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password"])
+        if commit:
+            user.save()
+        return user
 
-# Defined the missing PostForm for your Create and Update views
+
+# Existing PostForm - UPDATED to include 'tags' (Step 2 of the main task)
 class PostForm(forms.ModelForm):
-    """
-    A form for creating and updating blog posts.
-    """
     class Meta:
         model = Post
-        # We only need the user to input the title and content
-        fields = ['title', 'content']
+        # IMPORTANT: Add 'tags' to the fields list
+        fields = ['title', 'content', 'tags'] 
 
-# --- NEW: CommentForm for creating and editing comments ---
-class CommentForm(forms.ModelForm):
+# Placeholder for user profile update form
+class UserProfileUpdateForm(forms.ModelForm):
     """
-    ModelForm specifically for the Comment model.
-    It only exposes the content field to the user.
+    Form used for updating the user's profile details.
     """
     class Meta:
+        model = User
+        fields = ['username', 'email'] # Example fields
+        
+# Existing CommentForm
+class CommentForm(forms.ModelForm):
+    class Meta:
         model = Comment
-        # Only include content, the rest (post, author, dates) are set in the view
         fields = ['content']
         widgets = {
-            # Use Textarea for a larger input box, with a helpful placeholder
             'content': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Write your comment here...'}),
         }

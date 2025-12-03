@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils import timezone # Essential for published_date default
+from taggit.managers import TaggableManager # NEW: Import TaggableManager
 
 # The Post model represents a single blog entry.
 class Post(models.Model):
@@ -20,6 +21,11 @@ class Post(models.Model):
     # on_delete=models.CASCADE ensures that if a User is deleted, all their 
     # associated posts are also deleted.
     author = models.ForeignKey(User, on_delete=models.CASCADE)
+    # NEW: Add the tags field manager
+    # This automatically creates the necessary Many-to-Many relationship 
+    # and intermediate table handled by django-taggit.
+    tags = TaggableManager() 
+
 
     # A helpful string representation for the Django Admin and shell
     def __str__(self):

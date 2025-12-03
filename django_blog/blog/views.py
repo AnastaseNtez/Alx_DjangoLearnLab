@@ -12,6 +12,8 @@ from django.views.generic import (
 
 from .models import Post, Comment
 from .forms import UserRegisterForm, UserProfileUpdateForm, PostForm, CommentForm
+from taggit.models import Tag # NEW: Import Tag model for filtering
+
 
 # --- 1. USER AUTHENTICATION & PROFILE VIEWS ---
 
@@ -51,12 +53,37 @@ def profile(request):
 # --- 2. POST VIEWS (CRUD) ---
 
 class PostListView(ListView):
-    """Displays a list of all blog posts."""
     model = Post
-    template_name = 'blog/home.html'
+    template_name = 'blog/post_list.html'
     context_object_name = 'posts'
     ordering = ['-date_posted']
     paginate_by = 5
+    tag = None # Initialize tag attribute
+
+    def get_queryset(self):
+        # Start with the default queryset
+        queryset = super().get_queryset()
+        
+        # Check if a tag_slug is provided in the URL (from the kwargs of the view)
+        tag_slug = self.kwargs.get('tag_slug')
+
+        if tag_slug:
+            # Get the Tag object, or return 404 if not found
+            self.tag = get_object_or_404(Tag, slug=tag_slug)
+            
+            # Filter posts that are tagged with the specific tag
+            # The '__in' lookup works because tags__in expects a list of IDs or objects, and [self.tag] provides that.
+            queryset = queryset.filter(tags__in=[self.tag])
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Add the current tag object to the context, if filtering, for display in the template
+        if self.tag:
+            context['tag'] = self.tag
+        return context
+
 
 class PostDetailView(DetailView):
     """Displays a single blog post and its comments."""
