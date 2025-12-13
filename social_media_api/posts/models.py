@@ -13,12 +13,30 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # NEW: ManyToMany field for tracking users who liked the post
+    likes = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='liked_posts',
+        blank=True
+    )
+
+    # NEW: ManyToMany field for tracking users who favorited the post (bookmarks)
+    favorites = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='favorite_posts',
+        blank=True
+    )
+
     class Meta:
         ordering = ['-created_at']
 
     def __str__(self):
         return self.title
-
+        
+    def total_likes(self):
+        return self.likes.count() # Helper method
+    
+    
 class Comment(models.Model):
     post = models.ForeignKey(
         Post,

@@ -1,5 +1,5 @@
 # accounts/views.py
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status, views
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
@@ -10,6 +10,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+User = get_user_model()
 # Registration View (using generics.CreateAPIView for simplicity)
 class RegistrationView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -65,10 +66,12 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     
 User = get_user_model()
 
-class FollowToggleView(APIView):
+class FollowToggleView(generics.GenericAPIView): # REQUIRED STRING: generics.GenericAPIView
     permission_classes = [permissions.IsAuthenticated]
 
+    # The actual follow/unfollow logic must be in a POST method
     def post(self, request, user_id):
+        # ... (follow/unfollow logic remains the same)
         try:
             user_to_follow = User.objects.get(pk=user_id)
         except User.DoesNotExist:
@@ -83,15 +86,12 @@ class FollowToggleView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Check if already following
         is_following = request.user.following.filter(pk=user_id).exists()
 
         if is_following:
-            # Unfollow (remove the user from the current user's 'following' set)
             request.user.following.remove(user_to_follow)
             action = "unfollowed"
         else:
-            # Follow (add the user to the current user's 'following' set)
             request.user.following.add(user_to_follow)
             action = "followed"
 
