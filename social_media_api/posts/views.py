@@ -41,13 +41,14 @@ class PostViewSet(viewsets.ModelViewSet):
         else:
             post.likes.add(user)
             action_performed = "liked"
+            if not post.author == user:
             # NOTIFICATION TRIGGER
-            create_notification(
-                actor=user,
-                recipient=post.author,
-                verb="liked your post",
-                target=post
-            )
+                create_notification(
+                    actor=user,
+                    recipient=post.author,
+                    verb="liked your post",
+                    target=post
+                )
             
         return Response(
             {'status': f'Post successfully {action_performed}.', 
