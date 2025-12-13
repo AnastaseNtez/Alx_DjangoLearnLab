@@ -9,6 +9,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from notifications.utils import create_notification
 
 User = get_user_model()
 # Registration View (using generics.CreateAPIView for simplicity)
@@ -68,7 +69,7 @@ User = get_user_model()
 
 class FollowToggleView(generics.GenericAPIView): # REQUIRED STRING: generics.GenericAPIView
     permission_classes = [permissions.IsAuthenticated]
-
+    
     # The actual follow/unfollow logic must be in a POST method
     def post(self, request, user_id):
         # ... (follow/unfollow logic remains the same)
@@ -94,8 +95,15 @@ class FollowToggleView(generics.GenericAPIView): # REQUIRED STRING: generics.Gen
         else:
             request.user.following.add(user_to_follow)
             action = "followed"
-
+         # NOTIFICATION TRIGGER
+            create_notification(
+                actor=request.user,
+                recipient=user_to_follow,
+                verb="started following you",
+                target=user_to_follow
+            )
         return Response(
             {"detail": f"Successfully {action} {user_to_follow.username}.", "action": action},
             status=status.HTTP_200_OK
         )
+    

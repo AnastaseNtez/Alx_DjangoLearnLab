@@ -8,4 +8,5 @@ urlpatterns = [
     path('api/accounts/', include('accounts.urls')),
     # NEW posts app URLs under /api/
     path('api/', include('posts.urls')), 
+    path('api/notifications/', include('notifications.urls')),
 ]

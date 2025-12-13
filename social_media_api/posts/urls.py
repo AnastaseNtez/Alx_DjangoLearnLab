@@ -1,28 +1,33 @@
 # posts/urls.py
-from rest_framework.routers import DefaultRouter
-from rest_framework_nested import routers
 from django.urls import path, include
-from .views import PostViewSet, CommentViewSet, FeedView
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import DefaultRouter 
+from rest_framework_nested import routers
+from rest_framework_nested.routers import NestedRouterMixin # NEW IMPORT
 
+from .views import PostViewSet, CommentViewSet, FeedView
+
+# FIX: Create a custom router class that combines DefaultRouter with the NestedRouterMixin
+# This ensures the parent router has the necessary methods for the NestedSimpleRouter
+class NestedDefaultRouter(NestedRouterMixin, DefaultRouter):
+    pass
 
 # 1. Main Router for Posts
-router = DefaultRouter()
-# Register PostViewSet at /posts/
+# Use the new, compatible NestedDefaultRouter class
+router = NestedDefaultRouter() 
 router.register(r'posts', PostViewSet)
 
 # 2. Nested Router for Comments
-# The base route for comments will be /posts/{post_pk}/comments/
+# This works fine now, as the 'router' variable has the required mixin methods.
 posts_router = routers.NestedSimpleRouter(router, r'posts', lookup='post')
-# Register CommentViewSet nested under posts
 posts_router.register(r'comments', CommentViewSet, basename='post-comments')
 
 urlpatterns = [
-    # Main Post routes (list, create, detail, update, delete)
+    # 1. Specific path
+    path('feed/', FeedView.as_view(), name='feed'), 
+    
+    # 2. Main Post routes
     path('', include(router.urls)),
     
-    # Nested Comment routes (list comments for a post, create comment on a post)
+    # 3. Nested Comment routes
     path('', include(posts_router.urls)),
-    
-    path('feed/', FeedView.as_view(), name='feed'),
 ]

@@ -8,6 +8,7 @@ from .serializers import PostSerializer, CommentSerializer
 from .permissions import IsAuthorOrReadOnly
 from .pagination import CustomPageNumberPagination 
 from rest_framework import generics, permissions
+from notifications.utils import create_notification
 
 # ViewSet for Posts
 class PostViewSet(viewsets.ModelViewSet):
@@ -24,6 +25,32 @@ class PostViewSet(viewsets.ModelViewSet):
     # Automatically set the author of the post to the currently authenticated user
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def toggle_like(self, request, pk=None):
+        post = self.get_object()
+        user = request.user
+        
+        if post.likes.filter(pk=user.pk).exists():
+            post.likes.remove(user)
+            action_performed = "unliked"
+        else:
+            post.likes.add(user)
+            action_performed = "liked"
+            
+            # NOTIFICATION TRIGGER
+            create_notification(
+                actor=user,
+                recipient=post.author,
+                verb="liked your post",
+                target=post
+            )
+            
+        return Response(
+            {'status': f'Post successfully {action_performed}.', 
+             'likes_count': post.total_likes(),
+             'is_liked': action_performed == "liked"}, 
+            status=status.HTTP_200_OK
+        )
 
 # ViewSet for Comments (Nested under Posts for routing clarity)
 class CommentViewSet(viewsets.ModelViewSet):
@@ -53,6 +80,17 @@ class CommentViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError("Post not found.")
             
         serializer.save(author=self.request.user, post=post)
+    def perform_create(self, serializer):
+        # ... (post retrieval and comment save)
+        comment = serializer.save(author=self.request.user, post=post)
+        
+        # NOTIFICATION TRIGGER
+        create_notification(
+            actor=self.request.user,
+            recipient= Post.author,
+            verb="commented on your post",
+            target=comment
+        )
 
 class FeedView(generics.ListAPIView):
     # Only authenticated users can see their feed
