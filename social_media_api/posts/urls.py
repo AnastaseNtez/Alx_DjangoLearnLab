@@ -2,7 +2,9 @@
 from rest_framework.routers import DefaultRouter
 from rest_framework_nested import routers
 from django.urls import path, include
-from .views import PostViewSet, CommentViewSet
+from .views import PostViewSet, CommentViewSet, FeedView
+from rest_framework.routers import DefaultRouter
+
 
 # 1. Main Router for Posts
 router = DefaultRouter()
@@ -21,4 +23,6 @@ urlpatterns = [
     
     # Nested Comment routes (list comments for a post, create comment on a post)
     path('', include(posts_router.urls)),
+    
+    path('feed/', FeedView.as_view(), name='feed'),
 ]

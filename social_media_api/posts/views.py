@@ -6,7 +6,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 from .permissions import IsAuthorOrReadOnly
-from .pagination import CustomPageNumberPagination # Will define in Step 5
+from .pagination import CustomPageNumberPagination 
+from rest_framework import generics, permissions
 
 # ViewSet for Posts
 class PostViewSet(viewsets.ModelViewSet):
@@ -52,3 +53,19 @@ class CommentViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError("Post not found.")
             
         serializer.save(author=self.request.user, post=post)
+
+class FeedView(generics.ListAPIView):
+    # Only authenticated users can see their feed
+    permission_classes = [permissions.IsAuthenticated] 
+    serializer_class = PostSerializer
+    pagination_class = CustomPageNumberPagination # Use existing pagination
+
+    def get_queryset(self):
+        # 1. Get the list of users the current user is FOLLOWING
+        followed_users = self.request.user.following.all()
+        
+        # 2. Get all posts where the author is in the followed_users list
+        # Order by created_at descending (newest first)
+        queryset = Post.objects.filter(author__in=followed_users).order_by('-created_at')
+        
+        return queryset

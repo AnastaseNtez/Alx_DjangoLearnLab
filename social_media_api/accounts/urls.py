@@ -1,6 +1,6 @@
 # accounts/urls.py
 from django.urls import path
-from .views import RegistrationView, LoginView, UserProfileView
+from .views import RegistrationView, LoginView, UserProfileView, FollowToggleView
 
 urlpatterns = [
     # Route: /api/accounts/register/
@@ -12,4 +12,7 @@ urlpatterns = [
     # Route: /api/accounts/profile/
     # This route will point to the authenticated user's profile
     path('profile/', UserProfileView.as_view(), name='profile'),
+    # NEW Follow/Unfollow route
+    # POST request to this endpoint toggles follow status for the user_id
+    path('follow/<int:user_id>/', FollowToggleView.as_view(), name='follow-toggle'),
 ]
