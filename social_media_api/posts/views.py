@@ -3,12 +3,15 @@ from rest_framework import viewsets, permissions
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Post, Comment
+from .models import Post, Comment, Like
 from .serializers import PostSerializer, CommentSerializer
 from .permissions import IsAuthorOrReadOnly
 from .pagination import CustomPageNumberPagination 
 from rest_framework import generics, permissions
 from notifications.utils import create_notification
+from django.shortcuts import get_object_or_404 as generics_get_object_or_404
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 # ViewSet for Posts
 class PostViewSet(viewsets.ModelViewSet):
@@ -27,16 +30,17 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def toggle_like(self, request, pk=None):
-        post = self.get_object()
+        post = generics_get_object_or_404(Post, pk=pk)
         user = request.user
         
-        if post.likes.filter(pk=user.pk).exists():
+        is_liked = post.likes.filter(pk=user.pk).exists()
+
+        if is_liked:
             post.likes.remove(user)
             action_performed = "unliked"
         else:
             post.likes.add(user)
             action_performed = "liked"
-            
             # NOTIFICATION TRIGGER
             create_notification(
                 actor=user,
