@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-i+b1@bc6@-an*4$sz8u&ga3zm-ne6vwvwlb=%x(gh33&cbmmw_'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['your-heroku-app-name.herokuapp.com', '127.0.0.1']
 
 
 # Application definition
@@ -49,6 +49,7 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Insert right after SecurityMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -79,17 +80,30 @@ WSGI_APPLICATION = 'social_media_api.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+import dj_database_url
+import os
+DATABASE_URL = os.environ.get('DATABASE_URL')
+    # DATABASES = {
+    #     'default': {
+    #         'ENGINE': 'django.db.backends.sqlite3',
+    #         'NAME': BASE_DIR / 'db.sqlite3',
+    #     }
+    # }
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
-}
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
+
+# Note: Heroku often handles SSL/TLS, but these are good practice.
+SECURE_SSL_REDIRECT = True           # Redirects all HTTP traffic to HTTPS (Requires HTTPS support)
+SESSION_COOKIE_SECURE = True         # Sends cookies only over HTTPS
+CSRF_COOKIE_SECURE = True            # Sends CSRF cookie only over HTTPS
+SECURE_BROWSER_XSS_FILTER = True     # Prevents XSS attacks (legacy setting, often handled by browsers)
+X_FRAME_OPTIONS = 'DENY'             # Prevents clickjacking
+SECURE_CONTENT_TYPE_NOSNIFF = True   # Prevents browser from guessing MIME type
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -123,6 +137,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
